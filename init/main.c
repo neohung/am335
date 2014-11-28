@@ -574,6 +574,7 @@ asmlinkage void __init start_kernel(void)
 	 * this. But we do want output early, in case something goes wrong.
 	 */
 	console_init();
+	printk("\033[31m [NEO_DEBUG] %s \033[0m\n", "finish console_init()");
 	if (panic_later)
 		panic(panic_later, panic_param);
 
@@ -640,7 +641,9 @@ asmlinkage void __init start_kernel(void)
 	ftrace_init();
 
 	/* Do the rest non-__init'ed, we're now alive */
+	printk(KERN_DEBUG "\033[31m [NEO_DEBUG] %s \033[0m\n", "do rest_init()");
 	rest_init();
+	printk(KERN_DEBUG "\033[31m [NEO_DEBUG] %s \033[0m\n", "finish rest_init()");
 }
 
 /* Call all constructor functions linked into the kernel. */
@@ -659,19 +662,27 @@ core_param(initcall_debug, initcall_debug, bool, 0644);
 
 static char msgbuf[64];
 
+static int __init neo_debug_setup(char *options)
+{
+        printk("\033[31m [NEO_DEBUG] %s \033[0m\n", "enable initcall_debug, plz remember add debug in command line.");
+        initcall_debug = 1;
+	return 1;
+}
+__setup("neo_debug", neo_debug_setup);
+
 static int __init_or_module do_one_initcall_debug(initcall_t fn)
 {
 	ktime_t calltime, delta, rettime;
 	unsigned long long duration;
 	int ret;
 
-	printk(KERN_DEBUG "calling  %pF @ %i\n", fn, task_pid_nr(current));
+	printk(KERN_DEBUG "\033[31m [NEO_DEBUG] calling  %pF @ %i \033[0m\n", fn, task_pid_nr(current));
 	calltime = ktime_get();
 	ret = fn();
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
-	printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n", fn,
+	printk(KERN_DEBUG "\033[31m [NEO_DEBUG] initcall %pF returned %d after %lld usecs \033[0m\n", fn,
 		ret, duration);
 
 	return ret;

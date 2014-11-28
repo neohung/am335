@@ -1806,6 +1806,7 @@ static void d_can_init(int evm_id, int profile)
 
 static void mmc0_init(int evm_id, int profile)
 {
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "mmc0_init");
 	switch (evm_id) {
 	case BEAGLE_BONE_A3:
 	case BEAGLE_BONE_OLD:
@@ -2447,6 +2448,7 @@ static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
 	 * Read from the EEPROM to see the presence of daughter board.
 	 * If present, print the cpld version.
 	 */
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "am335x_setup_daughter_board");
 
 	ret = m->read(m, (char *)&config1, 0, sizeof(config1));
 	if (ret == sizeof(config1)) {
@@ -2458,6 +2460,7 @@ static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
 		daughter_brd_detected = false;
 		return;
 	}
+	printk("\033[31m [NEO_DEBUG] am335x_setup_daughter_board get config1 = %s\033[0m\n", config1.name);
 
 	if (!strncmp("CPLD", config1.cpld_ver, 4))
 		pr_info("CPLD version: %s\n", config1.cpld_ver);
@@ -2469,7 +2472,7 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 {
 	int ret;
 	char tmp[10];
-
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "am335x_evm_setup");
 	/* 1st get the MAC address from EEPROM */
 	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
 		EEPROM_MAC_ADDRESS_OFFSET, sizeof(am335x_mac_addr));
@@ -2490,6 +2493,7 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 		pr_err("This likely means that there either is no/or a failed EEPROM\n");
 		goto out;
 	}
+	printk("\033[31m [NEO_DEBUG] am335x_evm_setup get config = %s\033[0m\n", config.name);
 
 	if (config.header != AM335X_EEPROM_HEADER) {
 		pr_err("AM335X: wrong header 0x%x, expected 0x%x\n",
@@ -2720,6 +2724,7 @@ static void evm_init_cpld(void)
 
 static void __init am335x_evm_i2c_init(void)
 {
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "am335x_evm_i2c_init");
 	/* Initially assume General Purpose EVM Config */
 	am335x_evm_id = GEN_PURP_EVM;
 
@@ -2796,7 +2801,27 @@ static void __init am335x_evm_init(void)
 	am33xx_cpuidle_init();
 	am33xx_mux_init(board_mux);
 	omap_serial_init();
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "ready to call am335x_evm_i2c_init");
 	am335x_evm_i2c_init();
+	
+
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "emmc1 setup");
+	setup_pin_mux(mmc1_common_pin_mux);
+        setup_pin_mux(mmc1_dat4_7_pin_mux);
+        am335x_mmc[1].mmc = 2;
+        am335x_mmc[1].caps = MMC_CAP_8_BIT_DATA;
+        am335x_mmc[1].gpio_cd = -EINVAL;
+        am335x_mmc[1].gpio_wp = -EINVAL;
+        am335x_mmc[1].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "ready to set mmc0_common_pin_mux");
+	setup_pin_mux(mmc0_common_pin_mux);
+//	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "ready to set mmc0_cd_only_pin_mux");
+//        setup_pin_mux(mmc0_cd_only_pin_mux);
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "ready to set mmc0_wp_only_pin_mux");
+        setup_pin_mux(mmc0_wp_only_pin_mux);
+	printk("\033[31m [NEO_DEBUG] %s\033[0m\n", "ready to call omap2_hsmmc_init(am335x_mmc)");
+        omap2_hsmmc_init(am335x_mmc);
+ 
 	omap_sdrc_init(NULL, NULL);
 	usb_musb_init(&musb_board_data);
 	omap_board_config = am335x_evm_config;

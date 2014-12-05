@@ -1073,7 +1073,7 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 	if (usbintr)
 		musb_writel(reg_base, USB_CORE_INTR_STATUS_REG, usbintr);
 	musb->int_usb =	(usbintr & USB_INTR_USB_MASK) >> USB_INTR_USB_SHIFT;
-        printk("[NEO] 1 [musb->int_usb=%d]\n", musb->int_usb);
+        //printk("[NEO] 1 [musb->int_usb=%d]\n", musb->int_usb);
 
 	dev_dbg(musb->controller, "usbintr (%x) epintr(%x)\n", usbintr, epintr);
 
@@ -1087,7 +1087,7 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 		ret = IRQ_HANDLED;
 	}
 
-        printk("[NEO] 2 [musb->int_usb=%d]\n", musb->int_usb);
+        //printk("[NEO] 2 [musb->int_usb=%d]\n", musb->int_usb);
 	if (musb->txfifo_intr_enable && (usbintr & USB_INTR_TXFIFO_MASK)) {
 #ifdef CONFIG_USB_TI_CPPI41_DMA
 		dev_dbg(musb->controller,
@@ -1123,7 +1123,7 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 	//is_host_enabled(musb) = 1 mean OK, musb->int_usb = 128 means fail, should be 0
 	err = is_host_enabled(musb) && (musb->int_usb &
 			MUSB_INTR_VBUSERROR);
-        printk("[NEO][%d,%d,%d]\n", is_host_enabled(musb), musb->int_usb, MUSB_INTR_VBUSERROR);
+        //printk("[NEO][%d,%d,%d]\n", is_host_enabled(musb), musb->int_usb, MUSB_INTR_VBUSERROR);
 	if (err || (usbintr & (USB_INTR_DRVVBUS << USB_INTR_USB_SHIFT))) {
 		int drvvbus = musb_readl(reg_base, USB_STAT_REG);
 		void __iomem *mregs = musb->mregs;
@@ -1145,7 +1145,8 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 			musb->xceiv->state = OTG_STATE_A_WAIT_VFALL;
 			mod_timer(&musb->otg_workaround,
 						jiffies + POLL_SECONDS * HZ);
-			WARNING("VBUS error workaround (delay coming)\n");
+			//NEO cancle the WARING MESSAGE temporary
+			//WARNING("VBUS error workaround (delay coming)\n");
 		} else if (is_host_enabled(musb) && drvvbus) {
 			if ((devctl & MUSB_DEVCTL_SESSION) &&
 				!(devctl & MUSB_DEVCTL_BDEVICE) &&
